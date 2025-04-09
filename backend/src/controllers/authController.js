@@ -92,6 +92,7 @@ async function sendMail(email, token) {
 const sign_up = async (req, res) => {
     try {
         const {username, email, password} = req.body; //Extraemos los datos del body de la petición recibida
+        console.log ("funcionando", username, email, password)
         
         if (!username || !email || !password) {    
           return res.status(400).json({message: 'El nombre de usuario, correo electrónico y contraseña son requeridos'}); //Si alguno de los campos no es proporcionado, retornamos un mensaje de error
@@ -107,20 +108,24 @@ const sign_up = async (req, res) => {
             const id = uuidv4(); //Generamos un id unico para el usuario
             console.log("Id creado:", id);
             
-            
             const userGame = await User.create({id, username, experience: 0}); //Creamos un usuario en la tabla de usuarios del juego
             const userLoggin = await Loggin.create({username, email, password}); //Si el usuario no existe, lo creamos en la base de datos
+            console.log ("Usuario creado con exito")
+
             const achievements = await Achievement.findAll(); //Obtenemos todos los logros
             //Tenemos que asignar los logros
-            for(let i = 0; i < achievements.length; i++) {
-                await User_Achievement.create({id_user: id, id_achievement: achievements[i].id, achieved: false, completed: false}); //Creamos todos los logros para el usuario
+            console.log ("Estoy justo antes de los logros", username, email, password)
+            for(let i = 0; i < achievements.length; i++){
+                await User_Achievement.create({id, achievement_id: achievements[i].id, achieved: false}); //Creamos todos los logros para el usuario
             }
-            await UserItem.create({ id_user: id, id_item: 1 }); // Asignamos el ítem 1 al usuario recién creado
+            console.log ("He llegado a los logros")
+            
             return res.status(201).json({message: 'Usuario creado con éxito', user:{username: userGame.username}}); //Retornamos un mensaje de éxito;
         }
     }
     catch (error) {
         res.status(500).json({message: 'Error al registrar el usuario', error});
+        console.log (error);
     }
 }
 
